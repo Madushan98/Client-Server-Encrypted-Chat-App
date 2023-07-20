@@ -12,6 +12,13 @@ def listen_for_messages(client, username):
     while 1:
         response = client.recv(2048).decode('utf-8')
         if response != "":
+            if response == "send_file":
+                file_data = client.recv(2048).decode('utf-8')
+                file = open("new_file", "w")
+                file.write(file_data)
+                file.close()
+                print("File received")
+                continue
             message = username + " : " + response
             send_message_to_all(message, client)
         else:
@@ -33,6 +40,7 @@ def client_handler(client):
         username = client.recv(2048).decode('utf-8')
         if username != "":
             clients.append((username, client))
+            send_message_to_all(username + " has joined the chat", client)
             break
         else:
             print("Username is empty")
@@ -60,10 +68,6 @@ def main():
         client, address = server.accept()
         print("Got connection from", address)
         threading.Thread(target=client_handler, args=(client,)).start()
-
-    while True:
-        client, address = server.accept()  # Establish connection with client.
-        print("Got connection from", address)
 
 
 if __name__ == '__main__':
