@@ -72,7 +72,7 @@ message_button = tk.Button(bottom_frame, text="Send", font=BUTTON_FONT, bg=OCEAN
 message_button.pack(side=tk.LEFT, padx=10)
 
 message_box = tkst.ScrolledText(middle_frame, bg=MEDIUM_GREY, fg=WHITE, font=SMALL_FONT, width=67, height=23)
-message_box.pack(side=tk.DISABLED)
+message_box.config(side=tk.DISABLED)
 message_box.pack(side=tk.TOP)
 
 
