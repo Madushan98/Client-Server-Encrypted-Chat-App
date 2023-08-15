@@ -4,9 +4,10 @@ import sys
 import os
 import tkinter as tk
 import tkinter.scrolledtext as tkst
+import tkinter.messagebox as tkmb
 
 Host = 'localhost'
-Port = 1234  # Any port bethween 0 and 65535
+Port = 9999  # Any port bethween 0 and 65535
 
 def add_message_to_message_box(message):
     message_box.config(state=tk.NORMAL)
@@ -16,13 +17,26 @@ def add_message_to_message_box(message):
 def connect_to_server():
     try:
         client.connect((Host, Port))
-        print("Connected to server on port: %s" % Port)
-        communicate_to_server(client)
+        #print("Connected to server on port: %s" % Port)
+        add_message_to_message_box("Connected to the server")
+        #communicate_to_server(client)
 
     except:
-        print("Connection failed. Error : " + str(sys.exc_info()))
+        message_box.showerror("unable to connect to server", f"Unable to connect to server {Host}:{Port}")
+        #print("Connection failed. Error : " + str(sys.exc_info()))
+        exit(0)
+        #print("Connecting to server...")
+
+    username = username_textbox.get()
+    if username != "":
+        client.sendall(username.encode('utf-8'))
+
+    else:
+        message_box.showerror("Username is empty", "Username is empty")
         sys.exit()
-    print("Connecting to server...")
+    threading.Thread(target=listen_for_messages,
+                     args=(client, )).start()
+    threading.Thread(target=send_message_to_server, args=(client,)).start()
 
 def send_message():
     print("Sending message...")
@@ -72,7 +86,7 @@ message_button = tk.Button(bottom_frame, text="Send", font=BUTTON_FONT, bg=OCEAN
 message_button.pack(side=tk.LEFT, padx=10)
 
 message_box = tkst.ScrolledText(middle_frame, bg=MEDIUM_GREY, fg=WHITE, font=SMALL_FONT, width=67, height=23)
-message_box.config(side=tk.DISABLED)
+message_box.config(state=tk.DISABLED)
 message_box.pack(side=tk.TOP)
 
 
@@ -84,13 +98,13 @@ def listen_for_messages(client):
 
             # check if data has : in it
             if ":" not in data:
-                print(data)
+                add_message_to_message_box(data)
                 continue
             else:
                 message = data.split(":")
-                print(message[0] + ": " + message[1])
+                add_message_to_message_box(message[0] + ": " + message[1])
         else:
-            print("Empty message received.")
+            message_box.showerror("Error", "Empty message received from server")
             break
 
 def send_file_to_server(client):
@@ -127,24 +141,15 @@ def send_message_to_server(client):
             break
 
 
-def communicate_to_server(client):
+#def communicate_to_server(client):
 
-    username = input("Enter your username: ")
-    if username != "":
-        client.sendall(username.encode('utf-8'))
+    
 
-    else:
-        print("Username is empty")
-        sys.exit()
-    threading.Thread(target=listen_for_messages,
-                     args=(client, )).start()
-    threading.Thread(target=send_message_to_server, args=(client,)).start()
-
-    while True:
-        data = client.recv(2048).decode('utf-8')
-        if data == "":
-            break
-        print(data)
+    #while True:
+        #data = client.recv(2048).decode('utf-8')
+        #if data == "":
+        #    break
+        #print(data)
 
 
 def main():

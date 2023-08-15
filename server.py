@@ -3,7 +3,7 @@ import threading
 import sys
 
 Host = 'localhost'
-Port = 1234  # Any port bethween 0 and 65535
+Port = 9999  # Any port bethween 0 and 65535
 
 clients = []
 
