@@ -18,7 +18,7 @@ def connect_to_server():
     try:
         client.connect((Host, Port))
         #print("Connected to server on port: %s" % Port)
-        add_message_to_message_box("Connected to the server")
+        add_message_to_message_box("[SERVER] Connected to the server")
         #communicate_to_server(client)
 
     except:
@@ -39,7 +39,13 @@ def connect_to_server():
     threading.Thread(target=send_message_to_server, args=(client,)).start()
 
 def send_message():
-    print("Sending message...")
+    message= message_textbox.get()
+    if message != '':
+        client.sendall(message.encode())
+    else:
+        message_box.showerror("Message is empty", "Message is empty") 
+        
+
 
 
 DARK_GREY = '#121212'
@@ -97,12 +103,12 @@ def listen_for_messages(client):
         if data != "":
 
             # check if data has : in it
-            if ":" not in data:
+            if " : " not in data:
                 add_message_to_message_box(data)
                 continue
             else:
-                message = data.split(":")
-                add_message_to_message_box(message[0] + ": " + message[1])
+                message = data.split(" : ")
+                add_message_to_message_box(message[0] + " : " + message[1])
         else:
             message_box.showerror("Error", "Empty message received from server")
             break
@@ -113,7 +119,7 @@ def send_file_to_server(client):
 
     # Check if the file exists
     if not os.path.exists(file_name):
-        print(f"File '{file_name}' not found.")
+        add_message_to_message_box(f"File '{file_name}' not found.")
         return
 
     # Send the file to all connected clients
@@ -121,9 +127,9 @@ def send_file_to_server(client):
         with open(file_name, 'rb') as file:
             data = file.read()
             client.sendall(data)
-        print(f"File '{file_name}' sent to server.")
+        add_message_to_message_box(f"File '{file_name}' sent to server.")
     except Exception as e:
-        print(f"Error sending file to clients: {e}")
+        add_message_to_message_box(f"Error sending file to clients: {e}")
     
 
 
@@ -137,7 +143,7 @@ def send_message_to_server(client):
                 continue
             client.sendall(message.encode('utf-8'))
         else:
-            print("Message is empty")
+            add_message_to_message_box("Message is empty")
             break
 
 
