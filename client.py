@@ -5,14 +5,44 @@ import os
 import tkinter as tk
 import tkinter.scrolledtext as tkst
 import tkinter.messagebox as tkmb
+from datetime import datetime
 
 Host = 'localhost'
 Port = 9999  # Any port bethween 0 and 65535
 
+
+
+from datetime import datetime
+
+from datetime import datetime
+
 def add_message_to_message_box(message):
     message_box.config(state=tk.NORMAL)
-    message_box.insert(tk.END, message + "\n")
+
+    # Define colors for chat bubbles
+    bubble_bg_color = OCEAN_BLUE
+    bubble_text_color = WHITE
+
+    # Create a custom tag for the chat bubble style
+    message_box.tag_configure("bubble", background=bubble_bg_color, foreground=bubble_text_color, justify="left", wrap="word", spacing2=5)
+
+    # Get the current date and time
+    current_time = datetime.now().strftime("[%Y-%m-%d %H:%M:%S]")
+
+    # Add the message to the message box with chat bubble styling
+    message_box.insert(tk.END, "\n", ("bubble",))
+    message_box.insert(tk.END, message + "\n", ("bubble",))
+    
+    # Add the current time in a smaller font inside the bubble
+    message_box.insert(tk.END, f"{current_time}\n", "small")
+
+    # Configure small font style for the current time inside the bubble
+    message_box.tag_configure("small", font=("Helvetica", 10), foreground="gray")
+
     message_box.config(state=tk.DISABLED)
+    message_box.see(tk.END)
+
+
 
 def connect_to_server():
     try:
@@ -41,7 +71,7 @@ def connect_to_server():
     username_button.config(state=tk.DISABLED)
 
 def send_message():
-    message= message_textbox.get()
+    message = message_textbox.get()
     if message != '':
         client.sendall(message.encode())
         message_textbox.delete(0, len(message))
@@ -62,7 +92,7 @@ SMALL_FONT = ('Helvetica', 13)
 client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
 root = tk.Tk()
-root.geometry("600x600")
+root.geometry("600x520")
 root.title("Messenger Client")
 root.resizable(False,False)
 
