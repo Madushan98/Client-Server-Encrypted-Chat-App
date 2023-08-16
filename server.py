@@ -33,6 +33,8 @@ def send_message_to_all(data, client):
     for user in clients:
         if user[1] != client:
             send_message_to_client(user[1], data)
+        else:
+            send_message_to_client(user[1], "You : " + data)   
 
 
 def client_handler(client):
@@ -40,7 +42,7 @@ def client_handler(client):
         username = client.recv(2048).decode('utf-8')
         if username != "":
             clients.append((username, client))
-            send_message_to_all(username + " has joined the chat", client)
+            send_message_to_all(username + ": has joined the chat", client)
             break
         else:
             print("Username is empty")

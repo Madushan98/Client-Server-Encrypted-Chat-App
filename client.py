@@ -33,15 +33,18 @@ def connect_to_server():
 
     else:
         message_box.showerror("Username is empty", "Username is empty")
-        sys.exit()
+
     threading.Thread(target=listen_for_messages,
                      args=(client, )).start()
-    threading.Thread(target=send_message_to_server, args=(client,)).start()
+
+    username_textbox.config(state=tk.DISABLED)
+    username_button.config(state=tk.DISABLED)
 
 def send_message():
     message= message_textbox.get()
     if message != '':
         client.sendall(message.encode())
+        message_textbox.delete(0, len(message))
     else:
         message_box.showerror("Message is empty", "Message is empty") 
         
