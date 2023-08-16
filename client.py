@@ -7,14 +7,8 @@ import tkinter.scrolledtext as tkst
 import tkinter.messagebox as tkmb
 from datetime import datetime
 
-Host = 'localhost'
+Host = "13.233.250.226"
 Port = 9999  # Any port bethween 0 and 65535
-
-
-
-from datetime import datetime
-
-from datetime import datetime
 
 def add_message_to_message_box(message):
     message_box.config(state=tk.NORMAL)
