@@ -5,15 +5,17 @@ import os
 import tkinter as tk
 import tkinter.scrolledtext as tkst
 import tkinter.messagebox as tkmb
+import tkinter.filedialog as filedialog
 from datetime import datetime
 import rsa
+import base64
 
 public_key , private_key = rsa.newkeys(1024)
 public_key_partner = None
 
 print(public_key.save_pkcs1("PEM"))
 
-Host = "localhost"
+Host = '13.234.226.220'
 Port = 9999  # Any port between 0 and 65535
 
 def add_message_to_message_box(message):
@@ -84,6 +86,10 @@ def send_message():
         message_box.showerror("Message is empty", "Message is empty") 
         
 
+def choose_file():
+    file_path = filedialog.askopenfilename()
+    if file_path:
+        send_file_to_server(client, file_path)
 
 
 DARK_GREY = '#121212'
@@ -123,15 +129,21 @@ username_textbox.pack(side=tk.LEFT)
 username_button = tk.Button(top_frame, text="Join", font=BUTTON_FONT, bg=OCEAN_BLUE, fg=WHITE, command=connect_to_server)
 username_button.pack(side=tk.LEFT, padx=15)
 
-message_textbox = tk.Entry(bottom_frame, font=FONT, bg=MEDIUM_GREY, fg=WHITE, width=38)
+message_textbox = tk.Entry(bottom_frame, font=FONT, bg=MEDIUM_GREY, fg=WHITE, width=30)
 message_textbox.pack(side=tk.LEFT, padx=10)
  
 message_button = tk.Button(bottom_frame, text="Send", font=BUTTON_FONT, bg=OCEAN_BLUE, fg=WHITE, command=send_message)
 message_button.pack(side=tk.LEFT, padx=10)
 
+file_choose_button = tk.Button(bottom_frame, text="File @", font=BUTTON_FONT, bg=OCEAN_BLUE, fg=WHITE, command=choose_file)
+file_choose_button.pack(side=tk.LEFT, padx=10)
+
 message_box = tkst.ScrolledText(middle_frame, bg=MEDIUM_GREY, fg=WHITE, font=SMALL_FONT, width=67, height=23)
 message_box.config(state=tk.DISABLED)
 message_box.pack(side=tk.TOP)
+
+
+
 
 
 def listen_for_messages(client):
@@ -151,23 +163,21 @@ def listen_for_messages(client):
             message_box.showerror("Error", "Empty message received from server")
             break
 
-def send_file_to_server(client):
-    # Get the file name from the command line input
-    file_name = input("Enter the file name: ")
-
-    # Check if the file exists
-    if not os.path.exists(file_name):
-        add_message_to_message_box(f"File '{file_name}' not found.")
-        return
-
-    # Send the file to all connected clients
+def send_file_to_server(client, file_path):
     try:
-        with open(file_name, 'rb') as file:
+        client.sendall(rsa.encrypt("send_file".encode('utf-8'), public_key_partner))
+        with open(file_path, 'rb') as file:
             data = file.read()
-            client.sendall(data)
-        add_message_to_message_box(f"File '{file_name}' sent to server.")
+
+        encrypted_data = rsa.encrypt(data, public_key_partner)
+        encoded_data = base64.b64encode(encrypted_data)
+
+        client.sendall(encoded_data)
+
+        add_message_to_message_box(f"File '{os.path.basename(file_path)}' sent to server.")
     except Exception as e:
-        add_message_to_message_box(f"Error sending file to clients: {e}")
+        add_message_to_message_box(f"Error sending file to server: {e}")
+
     
 
 

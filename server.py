@@ -17,7 +17,7 @@ def listen_for_messages(client, username):
         response = rsa.decrypt(client.recv(1024) , private_key).decode('utf-8')  
         if response != "":
             if response == "send_file":
-                file_data = client.recv(512).decode('utf-8')
+                file_data = rsa.decrypt(client.recv(1024) , private_key).decode('utf-8')
                 file = open("new_file", "w")
                 file.write(file_data)
                 file.close()
