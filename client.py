@@ -6,9 +6,15 @@ import tkinter as tk
 import tkinter.scrolledtext as tkst
 import tkinter.messagebox as tkmb
 from datetime import datetime
+import rsa
 
-Host = "13.233.250.226"
-Port = 9999  # Any port bethween 0 and 65535
+public_key , private_key = rsa.newkeys(1024)
+public_key_partner = None
+
+print(public_key.save_pkcs1("PEM"))
+
+Host = "localhost"
+Port = 9999  # Any port between 0 and 65535
 
 def add_message_to_message_box(message):
     message_box.config(state=tk.NORMAL)
@@ -41,6 +47,10 @@ def add_message_to_message_box(message):
 def connect_to_server():
     try:
         client.connect((Host, Port))
+        global public_key_partner
+        public_key_partner = rsa.PublicKey.load_pkcs1(client.recv(1024))
+        client.send(public_key.save_pkcs1("PEM"))
+        
         #print("Connected to server on port: %s" % Port)
         add_message_to_message_box("[SERVER] Connected to the server")
         #communicate_to_server(client)
@@ -67,7 +77,8 @@ def connect_to_server():
 def send_message():
     message = message_textbox.get()
     if message != '':
-        client.sendall(message.encode())
+        print(public_key_partner)
+        client.sendall(rsa.encrypt(message.encode('utf-8'), public_key_partner))
         message_textbox.delete(0, len(message))
     else:
         message_box.showerror("Message is empty", "Message is empty") 
@@ -126,7 +137,7 @@ message_box.pack(side=tk.TOP)
 def listen_for_messages(client):
     while True:
 
-        data = client.recv(2048).decode('utf-8')
+        data = rsa.decrypt(client.recv(1024), private_key).decode('utf-8')
         if data != "":
 
             # check if data has : in it
