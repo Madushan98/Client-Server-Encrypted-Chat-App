@@ -1,4 +1,4 @@
-# Real-Time-Secure-Chat-Application
+# Client-Server-Encrypted-Chat-App
 
 ## Introduction:
 In this project We will Develop a real-time secure chat application from scratch like WhatsApp & Signal with end-to-end encryption. Our project will cover:
