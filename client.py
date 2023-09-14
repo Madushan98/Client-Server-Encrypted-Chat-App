@@ -15,7 +15,7 @@ public_key_partner = None
 
 print(public_key.save_pkcs1("PEM"))
 
-Host = '13.234.226.220'
+Host = 'localhost'
 Port = 9999  # Any port between 0 and 65535
 
 def add_message_to_message_box(message):
@@ -79,7 +79,6 @@ def connect_to_server():
 def send_message():
     message = message_textbox.get()
     if message != '':
-        print(public_key_partner)
         client.sendall(rsa.encrypt(message.encode('utf-8'), public_key_partner))
         message_textbox.delete(0, len(message))
     else:
@@ -148,31 +147,50 @@ message_box.pack(side=tk.TOP)
 
 def listen_for_messages(client):
     while True:
+        try:
+            # Receive the data from the client
+            data = rsa.decrypt(client.recv(1024), private_key).decode('utf-8')
 
-        data = rsa.decrypt(client.recv(1024), private_key).decode('utf-8')
-        if data != "":
-
-            # check if data has : in it
-            if " : " not in data:
-                add_message_to_message_box(data)
-                continue
+            if data != "":
+                if data == "send_file":
+                    receive_file(client)
+                else:
+                    # Check if data has ":" in it
+                    if " : " not in data:
+                        add_message_to_message_box(data)
+                    else:
+                        message = data.split(" : ")
+                        add_message_to_message_box(message[0] + " : " + message[1])
             else:
-                message = data.split(" : ")
-                add_message_to_message_box(message[0] + " : " + message[1])
-        else:
-            message_box.showerror("Error", "Empty message received from server")
+                message_box.showerror("Error", "Empty message received from server")
+                break
+        except Exception as e:
+            print(f"Error receiving data from server: {e}")
             break
+
+def receive_file(client):
+    try:
+        # Receive the file data in chunks
+        file_data = rsa.decrypt(client.recv(1024), private_key).decode('utf-8')
+        file = open("recived_file", "w")
+        file.write(file_data)
+        file.close()
+        add_message_to_message_box("New File received and saved as 'received_file'")
+        
+    except Exception as e:
+        print(f"Error receiving file: {e}")
+
 
 def send_file_to_server(client, file_path):
     try:
         client.sendall(rsa.encrypt("send_file".encode('utf-8'), public_key_partner))
-        with open(file_path, 'rb') as file:
-            data = file.read()
+        with open(file_path, 'r') as file:
+            data = file.read(1048576)
 
-        encrypted_data = rsa.encrypt(data, public_key_partner)
-        encoded_data = base64.b64encode(encrypted_data)
+        encrypted_data = rsa.encrypt(str(data).encode('utf-8'), public_key_partner)
+        
 
-        client.sendall(encoded_data)
+        client.sendall(encrypted_data)
 
         add_message_to_message_box(f"File '{os.path.basename(file_path)}' sent to server.")
     except Exception as e:
