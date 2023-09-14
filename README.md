@@ -25,7 +25,7 @@ In this project We will Develop a real-time secure chat application from scratch
 ## Installation
 Open terminal and type the following command
 ```
-git clone https://github.com/AhmedIssa11/Real-Time-Secure-Chat-Application
+https://github.com/layanmoyura/Client-Server-Encrypted-Chat-App.git
 ```
 
 ### Usage
